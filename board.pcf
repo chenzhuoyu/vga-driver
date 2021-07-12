@@ -33,13 +33,13 @@ set_io P2_1     46
 set_io P2_2     44
 set_io P2_3     42
 set_io P2_4     37
-set_io P2_9     36 
+set_io P2_9     36
 set_io P2_10    38
 set_io P2_11    43
 set_io P2_12    45
 
 # PMOD 3
-set_io P3_1     34 
+set_io P3_1     34
 set_io P3_2     31
 set_io P3_3     27
 set_io P3_4     25
@@ -54,7 +54,7 @@ set_io P4_2     20
 set_io P4_3     19
 set_io P4_4     18
 
-#spi
+# SPI
 set_io SPI_SS   16
 set_io SPI_SCK  15
 set_io SPI_MOSI 17

@@ -1,6 +1,7 @@
 module VGA(
     input  wire        PCLK,
     input  wire [7:0]  PRAM,
+    output wire        FSYNC,
     output wire        HSYNC,
     output wire        VSYNC,
     output wire        HBLANK,
@@ -31,6 +32,7 @@ module VGA(
     /* VGA sync & color signals */
     assign HSYNC        = hcnt > H_SYNC;
     assign VSYNC        = vcnt > V_SYNC;
+    assign FSYNC        = vcnt != V_SYNC;
     assign RGB444[11:0] = HBLANK || VBLANK ? 0 : pbuf[11:0];
 
     /* horizontal timing */
@@ -310,14 +312,14 @@ endmodule
 
 module main(
     input  wire clk,
-    input  wire P1_1,
-    input  wire P1_2,
-    input  wire P1_3,
-    input  wire P1_4,
-    input  wire P1_9,
-    input  wire P1_10,
-    input  wire P1_11,
-    input  wire P1_12,
+    // input  wire P1_1,
+    // input  wire P1_2,
+    // input  wire P1_3,
+    // input  wire P1_4,
+    // input  wire P1_9,
+    // input  wire P1_10,
+    // input  wire P1_11,
+    // input  wire P1_12,
     output wire P2_1,
     output wire P2_2,
     output wire P2_3,
@@ -332,8 +334,8 @@ module main(
     output wire P3_10,
     output wire P3_11,
     output wire P3_12,
-    output wire LED_G,
-    output wire LED_B
+    output wire P4_1,
+    output wire P4_2
 );
     wire pclk;
     wire locked;
@@ -346,6 +348,7 @@ module main(
     );
 
     /* sync & blanking signals */
+    wire fsync;
     wire hsync;
     wire vsync;
     wire hblank;
@@ -354,6 +357,10 @@ module main(
     /* connect the sync signals */
     assign P3_1 = hsync;
     assign P3_2 = vsync;
+
+    /* frame sync & pixel clock */
+    assign P4_1 = fsync;
+    assign P4_2 = hblank | vblank | ~pclk;
 
     /* connect the color signals */
     // wire [7:0] pixel = {
@@ -367,17 +374,11 @@ module main(
     //     P1_4
     // };
 
-    /* frame sync & pixel clock */
-    assign LED_G = ~hsync && ~vsync;
-    assign LED_B = ~hblank && ~vblank && pclk;
-
-    reg       vs = 1;
     reg [5:0] col = 0;
     reg [9:0] cnt = 0;
     reg [7:0] pixel = 0;
-    always @(negedge pclk) begin
-        vs <= vsync;
-        if (vs ^ vsync) begin
+    always @(posedge pclk) begin
+        if (~fsync) begin
             col <= 0;
             cnt <= 0;
             pixel <= 0;
@@ -404,6 +405,7 @@ module main(
     VGA vga(
         .PCLK   (pclk),
         .PRAM   (pixel),
+        .FSYNC  (fsync),
         .HSYNC  (hsync),
         .VSYNC  (vsync),
         .HBLANK (hblank),
